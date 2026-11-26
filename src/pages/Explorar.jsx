@@ -5,9 +5,17 @@ import MapView from '../components/Map.jsx'
 import Card from '../components/Card.jsx'
 
 const uniq = (arr, k) => [...new Set(arr.map((x) => x[k]).filter(Boolean))].sort()
+const minPension = (i) => {
+  if (Number(i.pensionMinima) > 0) return Number(i.pensionMinima)
+  if (Number(i.pensionMaxima) > 0) return Number(i.pensionMaxima)
+  return Infinity
+}
 const SORTS = {
   rating: ['Mejor calificadas', (a, b) => (b.calificacionPromedio ?? 0) - (a.calificacionPromedio ?? 0)],
-  barata: ['Pensión más baja', (a, b) => (a.pensionMinima ?? 1e9) - (b.pensionMinima ?? 1e9)],
+  barata: ['Pensión más baja', (a, b) => {
+    const x = minPension(a), y = minPension(b)
+    return x === y ? 0 : x - y
+  }],
   resenas: ['Más reseñadas', (a, b) => (b.totalResenas ?? 0) - (a.totalResenas ?? 0)],
 }
 
@@ -31,7 +39,7 @@ export default function Explorar() {
     return data
       .filter((i) => (!t || `${i.nombre} ${i.direccion ?? ''}`.toLowerCase().includes(t))
         && (!cat || i.nombreCategoria === cat) && (!gest || i.nombreGestion === gest)
-        && (!dist || i.nombreDistrito === dist) && (!maxP || (i.pensionMinima ?? 0) <= Number(maxP)))
+        && (!dist || i.nombreDistrito === dist) && (!maxP || minPension(i) <= Number(maxP)))
       .sort(SORTS[sort][1])
   }, [data, q, cat, gest, dist, maxP, sort])
 

@@ -1,5 +1,5 @@
 // Capa de acceso al backend EDUMAP-HEXAGONAL. Si el backend cambia, solo se toca este archivo.
-const BASE = import.meta.env.VITE_API_URL || ''
+const BASE = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')
 
 export const session = {
   token: () => localStorage.getItem('edumap_token'),
@@ -31,7 +31,7 @@ async function request(path, { method = 'GET', body } = {}) {
 }
 
 export const api = {
-  instituciones: () => request('/api/institution-search-views'),
+  instituciones: () => request('/api/institution-search-views?pageSize=0'),
   institucion: (id) => request(`/api/institution-search-views/${id}`),
   resenas: (id) => request(`/api/institutions/${id}/reviews`),
   crearResena: (id, b) => request(`/api/institutions/${id}/reviews`, { method: 'POST', body: b }),
@@ -44,7 +44,8 @@ export const api = {
 
 export const soles = (n) => (n == null ? null : `S/ ${Number(n).toLocaleString('es-PE', { maximumFractionDigits: 0 })}`)
 export const pension = (i) => {
-  const a = soles(i.pensionMinima), b = soles(i.pensionMaxima)
+  const a = Number(i.pensionMinima) > 0 ? soles(i.pensionMinima) : null
+  const b = Number(i.pensionMaxima) > 0 ? soles(i.pensionMaxima) : null
   if (!a && !b) return 'Pensión no registrada'
   return a && b && a !== b ? `${a} a ${b} al mes` : `${a || b} al mes`
 }

@@ -33,18 +33,26 @@ git remote add origin https://github.com/MrCloud18/EDUMAP-FRONTEND.git
 git push -u origin main
 ```
 
-## 4. Producción (CORS en el backend)
-En `Program.cs` del backend agrega antes de `builder.Build()`:
-```csharp
-builder.Services.AddCors(o => o.AddPolicy("Frontend", p => p
-    .WithOrigins(builder.Configuration.GetSection("Cors:Origins").Get<string[]>() ?? new[] { "http://localhost:5173" })
-    .AllowAnyHeader().AllowAnyMethod()));
-```
-y justo antes de `app.UseAuthentication();`:
-```csharp
-app.UseCors("Frontend");
-```
-Luego define `VITE_API_URL=https://tu-api.com` al compilar (`npm run build`) y despliega `dist/` en Vercel o Netlify.
+## 4. Producción en Vercel + Render
+
+El backend necesita el `Dockerfile`, `.dockerignore` y `Program.cs` preparados
+para Render, que incluyen la política CORS `VercelFrontend` y `/health`.
+
+1. Despliega el backend en Render con sus variables de entorno de conexión
+   a Supabase y JWT. Comprueba `https://TU-SERVICIO.onrender.com/health`.
+2. En Vercel (frontend), configura `VITE_API_URL` con la URL pública del
+   backend, por ejemplo `https://TU-SERVICIO.onrender.com` (sin barra final).
+3. En Render (backend), configura `Cors__AllowedOrigins__0` con la URL real
+   de Vercel, por ejemplo `https://TU-SITIO.vercel.app` (sin barra final).
+4. Vuelve a desplegar ambos servicios después de guardar las variables.
+
+El frontend consume directamente la API de Render. El proxy de Vite se usa
+solo durante el desarrollo local; el `vercel.json` conserva únicamente la
+reescritura necesaria para navegar por las rutas de React.
+
+La consulta del directorio usa `pageSize=0`, opción compatible con el código
+actual del backend para obtener todas las instituciones. En el buscador,
+pensiones de 0 procedentes de la vista sin ofertas se tratan como «no registrada».
 
 ## Estructura
 `src/api.js` concentra todas las llamadas al backend. `src/pages/` tiene las pantallas y `src/components/` el mapa y las tarjetas.
