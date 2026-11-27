@@ -33,6 +33,7 @@ async function request(path, { method = 'GET', body } = {}) {
 export const api = {
   instituciones: () => request('/api/institution-search-views?pageSize=0'),
   institucion: (id) => request(`/api/institution-search-views/${id}`),
+  perfil: (id) => request(`/api/institutions/${id}/profile`),
   resenas: (id) => request(`/api/institutions/${id}/reviews`),
   crearResena: (id, b) => request(`/api/institutions/${id}/reviews`, { method: 'POST', body: b }),
   login: (b) => request('/api/auth/login', { method: 'POST', body: b }),

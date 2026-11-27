@@ -4,6 +4,7 @@ import { api, pension } from '../api'
 import { useAuth } from '../auth.jsx'
 import MapView from '../components/Map.jsx'
 import { Rating } from '../components/Card.jsx'
+import InstitutionSections from '../components/InstitutionSections.jsx'
 
 export default function Detalle() {
   const { id } = useParams()
@@ -62,6 +63,8 @@ export default function Detalle() {
 
       <div className="dgrid">
         <section>
+          <h2>Información de la institución</h2>
+          <InstitutionSections id={n} showReviews={false} />
           <h2>Opiniones</h2>
           {!resenas.length && <div className="notice"><b>Todavía no hay reseñas.</b><p>Sé la primera persona en contar su experiencia.</p></div>}
           {resenas.map((r) => (
