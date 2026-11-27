@@ -31,7 +31,7 @@ export default function Explorar() {
   const [sort, setSort] = useState('rating')
   const [sel, setSel] = useState(null)
   const [shown, setShown] = useState(40)
-  const [more, setMore] = useState(false)
+  const [more, setMore] = useState(true)
 
   useEffect(() => { api.instituciones().then(setData).catch((e) => setError(e.message)) }, [])
 

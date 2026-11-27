@@ -18,9 +18,26 @@ p{margin:0 0 .6em}a{color:var(--valle-osc)}
 .link{background:none;border:0;padding:0;font:inherit;color:var(--valle-osc);text-decoration:underline;cursor:pointer}
 /* explorer: lista a la izquierda, mapa protagonista a la derecha */
 .explore{display:grid;grid-template-columns:minmax(380px,460px) 1fr;height:calc(100vh - 57px)}
-.panel{min-height:0;overflow-y:auto;background:var(--sillar);border-right:1px solid var(--linea)}
+.panel {
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--valle) transparent;
+  background: var(--sillar);
+  border-right: 1px solid var(--linea);
+}
 .intro{padding:18px 22px 4px}.intro h1{font-size:1.6rem;margin-bottom:.2em}.intro p{max-width:40ch;margin:0}
-.bar{position:sticky;top:0;z-index:5;display:grid;gap:8px;padding:10px 22px 6px;background:var(--sillar);border-bottom:1px solid var(--linea)}
+.filters-bar {
+  position: static;
+  display: grid;
+  gap: 8px;
+  padding: 14px 22px;
+  background: var(--sillar);
+  border-bottom: 1px solid var(--linea);
+}
 .selects{padding:12px 22px 4px}
 .field{width:100%;font:inherit;padding:10px 12px;border:1.5px solid var(--linea);border-radius:10px;background:var(--papel);color:var(--tinta)}
 .field:focus{border-color:var(--valle);outline:none;box-shadow:0 0 0 3px var(--cielo)}
@@ -76,7 +93,7 @@ p{margin:0 0 .6em}a{color:var(--valle-osc)}
 /* móvil */
 @media (max-width:860px){
   .top{gap:12px;padding:10px 14px;flex-wrap:wrap}.top nav{order:3;flex:1 0 100%}
-  .explore{display:flex;flex-direction:column;height:auto}.mapwrap{height:42vh;order:-1}.panel{border:0;overflow:visible}.bar{position:static}
+  .explore{display:flex;flex-direction:column;height:auto}.mapwrap{height:42vh;order:-1}.panel{border:0;overflow:visible}
   .dgrid{grid-template-columns:1fr}.minimap{position:static}.facts>div+div{border-left:0;border-top:1.5px solid var(--linea)}.two{grid-template-columns:1fr}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
