@@ -30,6 +30,8 @@ export default function Explorar() {
   const [maxP, setMaxP] = useState('')
   const [sort, setSort] = useState('rating')
   const [sel, setSel] = useState(null)
+  const [shown, setShown] = useState(40)
+  const [more, setMore] = useState(false)
 
   useEffect(() => { api.instituciones().then(setData).catch((e) => setError(e.message)) }, [])
 
@@ -43,21 +45,24 @@ export default function Explorar() {
       .sort(SORTS[sort][1])
   }, [data, q, cat, gest, dist, maxP, sort])
 
+  useEffect(() => setShown(40), [q, cat, gest, dist, maxP, sort])
+
   const pick = (id) => {
     setSel(id)
     document.getElementById(`card-${id}`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }
-  const clear = () => { setQ(''); setCat(''); setGest(''); setDist(''); setMaxP('') }
-  const dirty = q || cat || gest || dist || maxP
+  const clear = () => { setQ(''); setCat(''); setGest(''); setDist(''); setMaxP(''); setSort('rating') }
+  const active = [gest, dist, maxP].filter(Boolean).length + (sort !== 'rating' ? 1 : 0)
+  const dirty = q || cat || active
 
   return (
     <main className="explore">
       <section className="panel">
         <div className="intro">
           <h1>Encuentra dónde estudiar</h1>
-          <p className="muted">Compara colegios, institutos y universidades por ubicación, pensión y opiniones reales.</p>
+          <p className="muted">Compara colegios, institutos y universidades por ubicación, pensión y opiniones.</p>
         </div>
-        <div className="filters">
+        <div className="bar">
           <input className="field search" type="search" placeholder="Busca por nombre o dirección" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Buscar institución" />
           {data && (
             <div className="chips" role="group" aria-label="Categoría">
@@ -67,34 +72,38 @@ export default function Explorar() {
               ))}
             </div>
           )}
-          {data && (
-            <div className="selects">
-              <select className="field" value={dist} onChange={(e) => setDist(e.target.value)} aria-label="Distrito">
-                <option value="">Todos los distritos</option>
-                {uniq(data, 'nombreDistrito').map((d) => <option key={d}>{d}</option>)}
-              </select>
-              <select className="field" value={gest} onChange={(e) => setGest(e.target.value)} aria-label="Tipo de gestión">
-                <option value="">Pública y privada</option>
-                {uniq(data, 'nombreGestion').map((d) => <option key={d}>{d}</option>)}
-              </select>
-              <input className="field" type="number" min="0" step="50" placeholder="Pensión máx. (S/)" value={maxP} onChange={(e) => setMaxP(e.target.value)} aria-label="Pensión máxima" />
-              <select className="field" value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Ordenar">
-                {Object.entries(SORTS).map(([k, [l]]) => <option key={k} value={k}>{l}</option>)}
-              </select>
-            </div>
-          )}
+          <div className="count" aria-live="polite">
+            <span>{data ? `${list.length} ${list.length === 1 ? 'resultado' : 'resultados'}` : 'Cargando…'}</span>
+            <span className="acts">
+              {dirty && <button className="link" onClick={clear}>Quitar filtros</button>}
+              {data && <button className="link" onClick={() => setMore(!more)} aria-expanded={more}>{more ? 'Ocultar filtros' : `Más filtros${active ? ` (${active})` : ''}`}</button>}
+            </span>
+          </div>
         </div>
-        <div className="count" aria-live="polite">
-          {data && <span>{list.length} {list.length === 1 ? 'resultado' : 'resultados'}</span>}
-          {dirty && <button className="link" onClick={clear}>Quitar filtros</button>}
-        </div>
+        {data && more && (
+          <div className="selects">
+            <select className="field" value={dist} onChange={(e) => setDist(e.target.value)} aria-label="Distrito">
+              <option value="">Todos los distritos</option>
+              {uniq(data, 'nombreDistrito').map((d) => <option key={d}>{d}</option>)}
+            </select>
+            <select className="field" value={gest} onChange={(e) => setGest(e.target.value)} aria-label="Tipo de gestión">
+              <option value="">Pública y privada</option>
+              {uniq(data, 'nombreGestion').map((d) => <option key={d}>{d}</option>)}
+            </select>
+            <input className="field" type="number" min="0" step="50" placeholder="Pensión máx. (S/)" value={maxP} onChange={(e) => setMaxP(e.target.value)} aria-label="Pensión máxima" />
+            <select className="field" value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Ordenar">
+              {Object.entries(SORTS).map(([k, [l]]) => <option key={k} value={k}>{l}</option>)}
+            </select>
+          </div>
+        )}
         <div className="list">
           {error && <div className="notice err"><b>No pudimos cargar las instituciones.</b><p>{error}</p></div>}
           {!data && !error && [1, 2, 3, 4].map((n) => <div key={n} className="card skeleton" />)}
           {data && !list.length && !error && (
-            <div className="notice"><b>Ninguna institución coincide.</b><p>Prueba con otra categoría o sube la pensión máxima.</p></div>
+            <div className="notice"><b>Ninguna institución coincide.</b><p>Prueba con otra categoría o quita algún filtro.</p></div>
           )}
-          {list.map((i) => <Card key={i.idInstitucion} i={i} active={sel === i.idInstitucion} onPick={pick} fav={favs.includes(i.idInstitucion)} />)}
+          {list.slice(0, shown).map((i) => <Card key={i.idInstitucion} i={i} active={sel === i.idInstitucion} onPick={pick} fav={favs.includes(i.idInstitucion)} />)}
+          {list.length > shown && <button className="btn ghost" onClick={() => setShown(shown + 40)}>Mostrar más ({list.length - shown} restantes)</button>}
         </div>
       </section>
       <section className="mapwrap"><MapView items={list} selectedId={sel} onSelect={pick} /></section>
