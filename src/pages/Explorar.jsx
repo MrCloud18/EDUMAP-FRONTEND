@@ -48,13 +48,23 @@ export default function Explorar() {
   useEffect(() => setShown(40), [q, cat, gest, dist, maxP, sort])
 
   const pick = (id) => {
-    setSel(id)
-    document.getElementById(`card-${id}`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    setSel((actual) => actual === id ? null : id)
   }
+  
+  useEffect(() => {
+    if (sel !== null) {
+      document.getElementById(`card-${sel}`)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest'
+      })
+    }
+  }, [sel])
   const clear = () => { setQ(''); setCat(''); setGest(''); setDist(''); setMaxP(''); setSort('rating') }
   const active = [gest, dist, maxP].filter(Boolean).length + (sort !== 'rating' ? 1 : 0)
   const dirty = q || cat || active
-
+  const visibleCards = sel === null
+  ? list.slice(0, shown)
+  : list.filter((i) => i.idInstitucion === sel)
   return (
     <main className="explore">
       <section className="panel">
@@ -102,8 +112,32 @@ export default function Explorar() {
           {data && !list.length && !error && (
             <div className="notice"><b>Ninguna institución coincide.</b><p>Prueba con otra categoría o quita algún filtro.</p></div>
           )}
-          {list.slice(0, shown).map((i) => <Card key={i.idInstitucion} i={i} active={sel === i.idInstitucion} onPick={pick} fav={favs.includes(i.idInstitucion)} />)}
-          {list.length > shown && <button className="btn ghost" onClick={() => setShown(shown + 40)}>Mostrar más ({list.length - shown} restantes)</button>}
+          {sel !== null && (
+            <button
+              className="btn ghost"
+              onClick={() => setSel(null)}
+            >
+              ← Ver todas las instituciones
+            </button>
+          )}
+          
+          {visibleCards.map((i) => (
+            <Card
+              key={i.idInstitucion}
+              i={i}
+              active={sel === i.idInstitucion}
+              onPick={pick}
+              fav={favs.includes(i.idInstitucion)}
+            />
+          ))}
+          {sel === null && list.length > shown && (
+            <button
+              className="btn ghost"
+              onClick={() => setShown(shown + 40)}
+            >
+              Mostrar más ({list.length - shown} restantes)
+            </button>
+          )}
         </div>
       </section>
       <section className="mapwrap"><MapView items={list} selectedId={sel} onSelect={pick} /></section>
